@@ -1,6 +1,7 @@
 package com.game.alipetek.controller;
 
 import com.game.alipetek.dto.*;
+import com.game.alipetek.exception.AuthenticationException;
 import com.game.alipetek.model.User;
 import com.game.alipetek.service.AuthenticationService;
 import com.game.alipetek.service.JwtService;
@@ -21,7 +22,7 @@ public class AuthenticationController {
     }
 
     @PostMapping("/signup")
-    public ResponseEntity<User> register(@RequestBody RegisterUserDto registerUserDto) {
+    public ResponseEntity<?> register(@RequestBody RegisterUserDto registerUserDto) {
         User registeredUser = authenticationService.signup(registerUserDto);
         return ResponseEntity.ok(registeredUser);
     }

@@ -1,9 +1,9 @@
 package com.game.alipetek.service;
 
-import com.fasterxml.jackson.core.JsonFactory;
 import com.game.alipetek.dto.LoginUserDto;
 import com.game.alipetek.dto.RegisterUserDto;
 import com.game.alipetek.dto.VerifyUserDto;
+import com.game.alipetek.exception.AuthenticationException;
 import com.game.alipetek.model.User;
 import com.game.alipetek.repository.UserRepository;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
@@ -49,6 +49,14 @@ public class AuthenticationService {
     }
 
     public User signup(RegisterUserDto input) {
+        if (userRepository.findByUsername(input.getUsername()).isPresent()) {
+            throw new AuthenticationException(String.format("User with username %s already exists!", input.getUsername()), "username");
+        }
+
+        if (userRepository.findByEmail(input.getEmail()).isPresent()) {
+            throw new AuthenticationException(String.format("User with email %s already exists!", input.getEmail()), "email");
+        }
+
         User user = User.builder()
                 .username(input.getUsername())
                 .email(input.getEmail())

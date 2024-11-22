@@ -11,7 +11,8 @@ import {
     Typography, 
     Paper,
     Alert,
-    IconButton
+    IconButton,
+    CircularProgress
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
@@ -38,6 +39,8 @@ const Login = ({ onLogin }) => {
     const [password, setPassword] = useState('');
     const [message, setMessage] = useState('');
     const [error, setError] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
+    const [alertSeverity, setAlertSeverity] = useState('success');
     const navigate = useNavigate();
 
     const updateUserLocation = async (username) => {
@@ -65,6 +68,10 @@ const Login = ({ onLogin }) => {
     };
 
     const handleLogin = async () => {
+        setIsLoading(true);
+        setError('');
+        setMessage('');
+        setAlertSeverity('success');
         try {
             const response = await axios.post('/auth/login', {
                 username,
@@ -73,16 +80,29 @@ const Login = ({ onLogin }) => {
             setMessage('Login successful!');
             const token = response.data.token;
             localStorage.setItem('jwtToken', token);
-            const decodedToken = jwtDecode(token);
-            //const username = decodedToken.sub;
+            setMessage('Login successful!');
+            setAlertSeverity('success');
 
             await updateUserLocation(username);
             onLogin();
             navigate('/home');
         } catch (error) {
-            console.log("error", error);
-            const errorMessage = error.response?.data?.message || 'Login failed. Please try again.';
-            setMessage(errorMessage);
+            if (error.response) {
+                console.error('Server error:', {
+                    status: error.response.status,
+                    data: error.response.data
+                });
+                
+                const errorMessage = error.response.data.message || 'Invalid username or password';
+                setError(errorMessage);
+            } else if (error.request) {
+                setError('Unable to reach the server. Please check your connection.');
+            } else {
+                setError('An unexpected error occurred. Please try again.');
+            }
+            setAlertSeverity('error');
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -100,18 +120,32 @@ const Login = ({ onLogin }) => {
 
             const { username } = response.data;
             await updateUserLocation(username);
+
+            setMessage('Login successful!');
+            setAlertSeverity('success');
             
             onLogin();
             navigate('/home');
         } catch (error) {
-            console.error('Google login error:', error);
-            setError('Failed to login with Google. Please try again.');
-            setMessage('');
+            if (error.response) {
+                console.error('Server error:', {
+                    status: error.response.status,
+                    data: error.response.data
+                });
+                setError('Google login failed: ' + (error.response.data.message || 'Unknown error'));
+            } else if (error.request) {
+                setError('Unable to reach the server. Please check your connection.');
+            } else {
+                setError('An unexpected error occurred during Google login.');
+            }
+            setAlertSeverity('error');
+        } finally {
+            setIsLoading(false);
         }
     };
     const errorMessage = (error) => {
-        console.log(error);
         setError('Google login failed. Please try again.');
+        setAlertSeverity('error');
     };
 
     const isFormValid = username && password;
@@ -187,18 +221,26 @@ const Login = ({ onLogin }) => {
                             fontSize: '1rem'
                         }}
                     >
-                        Sign In
+                        {isLoading ? (
+                            <CircularProgress size={24} color="inherit" />
+                        ) : (
+                            'Sign In'
+                        )}
                     </Button>
 
-                    {message && (
-                        <Alert severity="success" sx={{ width: '100%', mb: 2 }}>
-                            {message}
-                        </Alert>
-                    )}
-                    
-                    {error && (
-                        <Alert severity="error" sx={{ width: '100%', mb: 2 }}>
-                            {error}
+                    {(message || error) && (
+                        <Alert 
+                            severity={alertSeverity}
+                            sx={{ 
+                                width: '100%', 
+                                mb: 2,
+                                '& .MuiAlert-message': {
+                                    width: '100%',
+                                    wordBreak: 'break-word'
+                                }
+                            }}
+                        >
+                            {message || error}
                         </Alert>
                     )}
                 </Box>

@@ -28,7 +28,7 @@ import {
 import NavigationBar from './NavigationBar';
 import axios from 'axios';
 
-const QuestionRecommend = () => {
+const QuestionRecommend = ({ onLogout }) => {
   const theme = useTheme();
   const [activeStep, setActiveStep] = useState(0);
   const [openSnackbar, setOpenSnackbar] = useState(false);
@@ -250,7 +250,7 @@ const QuestionRecommend = () => {
 
   return (
     <Container maxWidth="md" sx={{ mt: 14, mb: 2 }}>
-      <NavigationBar />
+      <NavigationBar onLogout={onLogout}/>
       <Card elevation={3} sx={{
         borderRadius: 2,
         background: 'linear-gradient(to right bottom, #ffffff, #f8f9fa)',

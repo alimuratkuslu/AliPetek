@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { jwtDecode } from 'jwt-decode';
 import {
     AppBar,
     Toolbar,
@@ -14,7 +15,10 @@ import {
     ListItem,
     ListItemIcon,
     ListItemText,
-    Avatar
+    Avatar,
+    Menu,
+    MenuItem,
+    Divider
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import HomeIcon from '@mui/icons-material/Home';
@@ -25,6 +29,8 @@ import LocationOnIcon from '@mui/icons-material/LocationOn';
 import HelpIcon from '@mui/icons-material/Help';
 import PersonIcon from '@mui/icons-material/Person';
 import MenuIcon from '@mui/icons-material/Menu';
+import LogoutIcon from '@mui/icons-material/Logout';
+import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 
 const StyledAppBar = styled(AppBar)(({ theme }) => ({
     background: 'linear-gradient(135deg, #1a237e 0%, #0d47a1 100%)',
@@ -62,12 +68,40 @@ const StyledIconButton = styled(IconButton)(({ theme, active }) => ({
     } : {}
 }));
 
-const NavigationBar = ({ pageTitle }) => {
+const NavigationBar = ({ onLogout }) => {
     const navigate = useNavigate();
     const location = useLocation();
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
     const [mobileOpen, setMobileOpen] = useState(false);
+    const [anchorEl, setAnchorEl] = useState(null);
+
+    const handleProfileMenuOpen = (event) => {
+        setAnchorEl(event.currentTarget);
+    };
+
+    const handleProfileMenuClose = () => {
+        setAnchorEl(null);
+    };
+
+    const handleSignOut = useCallback(async () => {
+        console.log('handleSignOut clicked');
+        handleProfileMenuClose();
+        if (typeof onLogout === 'function') {
+            try {
+                await onLogout();
+            } catch (error) {
+                console.error('Error during logout:', error);
+            }
+        } else {
+            console.error('onLogout is not a function:', onLogout);
+        }
+    });
+
+    const handleProfileClick = () => {
+        handleProfileMenuClose();
+        navigate('/profile');
+    };
 
     const navItems = [
         { path: '/home', icon: <HomeIcon />, label: 'Home' },
@@ -147,8 +181,58 @@ const NavigationBar = ({ pageTitle }) => {
                                     </StyledIconButton>
                                 </Tooltip>
                             ))}
+                            <Tooltip title="Account">
+                                <IconButton
+                                    onClick={handleProfileMenuOpen}
+                                    sx={{
+                                        ml: 2,
+                                        color: 'white',
+                                        '&:hover': {
+                                            color: '#64b5f6',
+                                        },
+                                    }}
+                                >
+                                    <AccountCircleIcon />
+                                </IconButton>
+                            </Tooltip>
                         </Box>
                     )}
+
+                    <Menu
+                        anchorEl={anchorEl}
+                        open={Boolean(anchorEl)}
+                        onClose={handleProfileMenuClose}
+                        PaperProps={{
+                            elevation: 0,
+                            sx: {
+                                overflow: 'visible',
+                                filter: 'drop-shadow(0px 2px 8px rgba(0,0,0,0.32))',
+                                mt: 1.5,
+                                '& .MuiAvatar-root': {
+                                    width: 32,
+                                    height: 32,
+                                    ml: -0.5,
+                                    mr: 1,
+                                },
+                            },
+                        }}
+                        transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+                        anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+                    >
+                        <MenuItem onClick={handleProfileClick}>
+                            <ListItemIcon>
+                                <PersonIcon fontSize="small" />
+                            </ListItemIcon>
+                            Profile
+                        </MenuItem>
+                        <Divider />
+                        <MenuItem onClick={handleSignOut}>
+                            <ListItemIcon>
+                                <LogoutIcon fontSize="small" />
+                            </ListItemIcon>
+                            Sign out
+                        </MenuItem>
+                    </Menu>
                 </Toolbar>
             </StyledAppBar>
 
@@ -159,14 +243,13 @@ const NavigationBar = ({ pageTitle }) => {
                     open={mobileOpen}
                     onClose={handleDrawerToggle}
                     ModalProps={{
-                        keepMounted: true // Better mobile performance
+                        keepMounted: true
                     }}
                 >
                     {drawer}
                 </Drawer>
             )}
             
-            {/* Add toolbar spacing */}
             <Toolbar />
         </>
     );

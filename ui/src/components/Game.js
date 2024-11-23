@@ -9,7 +9,7 @@ import Dice from './Dice';
 import { jwtDecode } from 'jwt-decode';
 import notificationSound from '../assets/notification-sound.mp3';
 
-const Game = () => {
+const Game = ({ onLogout }) => {
   const { state } = useLocation();
   const navigate = useNavigate();
   const [game, setGame] = useState(state?.game || {});
@@ -228,7 +228,7 @@ const Game = () => {
       position: 'relative',
       p: 4 
     }}>
-      <Navi />
+      <Navi onLogout={onLogout}/>
       
       <Box sx={{ maxWidth: 1200, mx: 'auto', mt: 4 }}>
         <Typography variant="h4" align="center" sx={{ 

@@ -22,7 +22,7 @@ import {
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import LocationOffIcon from '@mui/icons-material/LocationOff';
 
-const Profile = () => {
+const Profile = ({ onLogout }) => {
   const [userProfile, setUserProfile] = useState(null);
   const [previousGames, setPreviousGames] = useState([]);
   const [locationSharing, setLocationSharing] = useState(false);
@@ -125,7 +125,7 @@ const Profile = () => {
         alignItems="center"
         minHeight="100vh"
       >
-        <Navi />
+        <Navi onLogout={onLogout}/>
         <CircularProgress />
       </Box>
     );
@@ -139,7 +139,7 @@ const Profile = () => {
       backgroundImage: 'linear-gradient(135deg, #f0f2f5 0%, #e0e7ff 100%)',
       pb: 6
     }}>
-      <Navi />
+      <Navi onLogout={onLogout}/>
       
       <Container maxWidth="lg" sx={{ pt: 8 }}>
       <Box sx={{

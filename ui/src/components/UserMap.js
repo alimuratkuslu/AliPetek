@@ -24,7 +24,7 @@ import {
 import { jwtDecode } from 'jwt-decode';
 import NavigationBar from './NavigationBar';
 
-const UserMap = () => {
+const UserMap = ({ onLogout }) => {
   const [userLocations, setUserLocations] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null);
   const [error, setError] = useState(null);
@@ -173,7 +173,7 @@ const UserMap = () => {
         flexDirection="column"
         gap={2}
       >
-        <NavigationBar />
+        <NavigationBar onLogout={onLogout}/>
         <CircularProgress size={60} />
         <Typography variant="h6" color="textSecondary">
           Loading user locations...
@@ -184,7 +184,7 @@ const UserMap = () => {
 
   return (
     <Container maxWidth="xl" sx={{ mt: 15, mb: 7 }}>
-      <NavigationBar />
+      <NavigationBar onLogout={onLogout}/>
       <Grid container spacing={3}>
         <Grid item xs={12}>
           <Card

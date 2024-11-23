@@ -3,7 +3,7 @@ import { Box, Card, CardContent, Typography, Grid, Avatar, CircularProgress, Bad
 import axios from 'axios';
 import Navi from './NavigationBar';
 
-const Leaderboard = () => {
+const Leaderboard = ({ onLogout }) => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -52,7 +52,7 @@ const Leaderboard = () => {
       backgroundImage: 'linear-gradient(135deg, #f0f2f5 0%, #e0e7ff 100%)',
       pb: 6
     }}>
-      <Navi />
+      <Navi onLogout={onLogout}/>
       
       <Container maxWidth="lg" sx={{ pt: 8 }}>
       <Box sx={{

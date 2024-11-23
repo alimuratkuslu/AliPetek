@@ -6,7 +6,7 @@ import { Box, Typography, Card, CardContent, CircularProgress, Grid } from '@mui
 
 const COUNTDOWN_SECONDS = 5;
 
-const Lobby = () => {
+const Lobby = ({ onLogout }) => {
     const location = useLocation();
     const navigate = useNavigate();
     const initialGame = location.state?.game;
@@ -143,7 +143,7 @@ const Lobby = () => {
             bgcolor: '#f0f2f5',
             backgroundImage: 'linear-gradient(135deg, #f0f2f5 0%, #e0e7ff 100%)'
         }}>
-            <Navi />
+            <Navi onLogout={onLogout}/>
             <Box sx={{ 
                 flexGrow: 1, 
                 display: 'flex', 

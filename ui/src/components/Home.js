@@ -16,7 +16,7 @@ import {
   Divider,
 } from '@mui/material';
 
-const Home = () => {
+const Home = ({ onLogout }) => {
   const [friendGameId, setFriendGameId] = useState('');
   const [userList, setUserList] = useState([]);
   const [filteredUsers, setFilteredUsers] = useState([]);
@@ -172,7 +172,7 @@ const Home = () => {
       bgcolor: '#f0f2f5',
       backgroundImage: 'linear-gradient(135deg, #f0f2f5 0%, #e0e7ff 100%)'
     }}>
-      <Navi />
+      <Navi onLogout={onLogout}/>
       <br />
       <Container maxWidth="md" sx={{ pt: 8, pb: 6 }}>
         <Box sx={{

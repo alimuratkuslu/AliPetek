@@ -179,7 +179,7 @@ public class GameService {
             }
         }
         else {
-            throw new WrongAnswerException("Your answer is wrong");
+            throw new WrongAnswerException("Your answer is wrong", "wrongAnswer");
         }
 
         gameRepository.save(game);

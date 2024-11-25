@@ -23,7 +23,7 @@ const StyledContainer = styled(Container)(({ theme }) => ({
     alignItems: 'center',
     justifyContent: 'center',
     padding: theme.spacing(3),
-    background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)'
+    background: 'linear-gradient(135deg, #d9d9d9 0%, #c3cfe2 100%)'
 }));
 
 const StyledPaper = styled(Paper)(({ theme }) => ({
@@ -49,7 +49,7 @@ const LogoContainer = styled(Box)(({ theme }) => ({
         transform: 'translate(-50%, -50%)',
         width: '140px',
         height: '140px',
-        background: 'radial-gradient(circle, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 70%)',
+        background: 'radial-gradient(circle, rgba(114, 110, 255,0.2) 0%, rgba(114, 110, 255,0) 70%)',
         borderRadius: '50%',
         zIndex: 0
     },
@@ -67,20 +67,20 @@ const FeatureBox = styled(Box)(({ theme }) => ({
     display: 'flex',
     alignItems: 'center',
     marginBottom: theme.spacing(2),
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    backgroundColor: '#726eff',
     padding: theme.spacing(2),
     borderRadius: theme.spacing(1),
     transition: 'all 0.3s ease',
     cursor: 'pointer',
     '&:hover': {
         transform: 'translateX(10px)',
-        backgroundColor: 'rgba(255, 255, 255, 0.15)',
-        boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+        backgroundColor: 'rgba(114, 110, 255, 0.15)',
+        boxShadow: '0 4px 12px rgba(114, 110, 255,0.1)'
     }
 }));
 
 const FeatureIcon = styled(Avatar)(({ theme }) => ({
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    backgroundColor: '#726eff',
     marginRight: theme.spacing(2),
     width: 40,
     height: 40,
@@ -94,14 +94,13 @@ const ToggleButton = styled(Button)(({ theme }) => ({
     textTransform: 'none',
     fontWeight: 500,
     padding: '10px 24px',
-    borderColor: 'rgba(255, 255, 255, 0.5)',
-    color: 'white',
+    borderColor: '#726eff',
+    color: '#726eff',
     borderRadius: '25px',
     transition: 'all 0.3s ease',
     '&:hover': {
-        borderColor: 'white',
-        backgroundColor: 'rgba(255, 255, 255, 0.1)',
-        transform: 'translateY(-2px)'
+        borderColor: '#5753cc',
+        backgroundColor: 'rgba(114, 110, 255, 0.1)'
     }
 }));
 

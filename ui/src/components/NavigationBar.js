@@ -33,7 +33,7 @@ import LogoutIcon from '@mui/icons-material/Logout';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 
 const StyledAppBar = styled(AppBar)(({ theme }) => ({
-    background: 'linear-gradient(135deg, #1a237e 0%, #0d47a1 100%)',
+    background: 'linear-gradient(135deg, #726eff 0%, #5753cc 100%)',
     boxShadow: '0 3px 5px 2px rgba(0, 0, 0, 0.1)',
 }));
 

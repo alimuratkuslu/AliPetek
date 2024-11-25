@@ -30,7 +30,21 @@ const StyledPaper = styled(Paper)(({ theme }) => ({
     flexDirection: 'column',
     alignItems: 'center',
     maxWidth: '400px',
-    margin: 'auto'
+    margin: 'auto',
+    '& .MuiButton-contained': {
+        backgroundColor: '#726eff',
+        '&:hover': {
+            backgroundColor: '#5753cc'
+        }
+    },
+    '& .MuiTextField-root': {
+        '& .Mui-focused': {
+            color: '#726eff',
+            '& .MuiOutlinedInput-notchedOutline': {
+                borderColor: '#726eff'
+            }
+        }
+    }
 }));
 
 const PasswordStrengthBar = styled(LinearProgress)(({ theme, strength }) => ({
@@ -41,9 +55,9 @@ const PasswordStrengthBar = styled(LinearProgress)(({ theme, strength }) => ({
     '& .MuiLinearProgress-bar': {
         backgroundColor: 
             strength === 0 ? theme.palette.error.main :
-            strength === 1 ? theme.palette.warning.main :
-            strength === 2 ? theme.palette.info.main :
-            theme.palette.success.main
+            strength === 1 ? '#726eff' :
+            strength === 2 ? '#5753cc' :
+            '#3d39b3'
     }
 }));
 

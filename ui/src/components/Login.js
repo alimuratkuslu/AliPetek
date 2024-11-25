@@ -25,7 +25,21 @@ const StyledPaper = styled(Paper)(({ theme }) => ({
     alignItems: 'center',
     position: 'relative',
     maxWidth: '400px',
-    margin: 'auto'
+    margin: 'auto',
+    '& .MuiButton-contained': {
+        backgroundColor: '#726eff',
+        '&:hover': {
+            backgroundColor: '#5753cc'
+        }
+    },
+    '& .MuiTextField-root': {
+        '& .Mui-focused': {
+            color: '#726eff',
+            '& .MuiOutlinedInput-notchedOutline': {
+                borderColor: '#726eff'
+            }
+        }
+    }
 }));
 
 const GoogleLoginWrapper = styled(Box)({

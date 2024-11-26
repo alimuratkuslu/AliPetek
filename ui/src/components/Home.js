@@ -69,44 +69,6 @@ const Home = ({ onLogout }) => {
     fetchUsers();
   }, [location]);
 
-  const GameResultDialog = () => (
-    <Dialog 
-      open={showGameResult} 
-      onClose={() => setShowGameResult(false)}
-      maxWidth="sm"
-      fullWidth
-    >
-      <DialogTitle sx={{ bgcolor: '#726eff', color: 'white' }}>
-        Game Finished!
-      </DialogTitle>
-      <DialogContent sx={{ mt: 2 }}>
-        {gameResult && (
-          <>
-            <Typography variant="h6" gutterBottom>
-              Winner: {gameResult.winner?.username}
-            </Typography>
-            <Typography>
-              Final Scores:
-            </Typography>
-            <Box sx={{ mt: 1 }}>
-              <Typography>
-                Player 1: {gameResult.firstUserPoints} points
-              </Typography>
-              <Typography>
-                Player 2: {gameResult.secondUserPoints} points
-              </Typography>
-            </Box>
-          </>
-        )}
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={() => setShowGameResult(false)} color="primary">
-          Close
-        </Button>
-      </DialogActions>
-    </Dialog>
-  );
-
   const handleSearchChange = (inputValue) => {
     const filtered = userList.filter((user) =>
       user.username.toLowerCase().includes(inputValue.toLowerCase())
@@ -227,6 +189,41 @@ const Home = ({ onLogout }) => {
     }}>
       <Navi onLogout={onLogout}/>
       <br />
+      <Dialog 
+        open={showGameResult} 
+        onClose={() => setShowGameResult(false)}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle sx={{ bgcolor: '#726eff', color: 'white' }}>
+          Game Finished!
+        </DialogTitle>
+        <DialogContent sx={{ mt: 2 }}>
+          {gameResult && (
+            <>
+              <Typography variant="h6" gutterBottom>
+                Winner: {gameResult.winner?.username}
+              </Typography>
+              <Typography>
+                Final Scores:
+              </Typography>
+              <Box sx={{ mt: 1 }}>
+                <Typography>
+                  Player 1: {gameResult.firstUserPoints} points
+                </Typography>
+                <Typography>
+                  Player 2: {gameResult.secondUserPoints} points
+                </Typography>
+              </Box>
+            </>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setShowGameResult(false)} color="primary">
+            Close
+          </Button>
+        </DialogActions>
+      </Dialog>
       <Container maxWidth="md" sx={{ pt: 8, pb: 6 }}>
         <Box sx={{
           textAlign: 'center',

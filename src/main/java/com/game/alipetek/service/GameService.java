@@ -9,6 +9,7 @@ import com.game.alipetek.exception.NotFoundException;
 import com.game.alipetek.exception.WrongAnswerException;
 import com.game.alipetek.model.*;
 import com.game.alipetek.repository.GameRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -18,6 +19,7 @@ import java.util.Random;
 import java.util.stream.Collectors;
 
 @Service
+@Transactional
 public class GameService {
 
     private final GameRepository gameRepository;
@@ -28,6 +30,24 @@ public class GameService {
         this.gameRepository = gameRepository;
         this.questionService = questionService;
         this.userService = userService;
+    }
+
+    @Transactional
+    public Game getGameWithWrongGuesses(Long gameId) throws NotFoundException {
+        return gameRepository.findById(gameId)
+                .orElseThrow(() -> new NotFoundException("Game not found with id: " + gameId));
+    }
+
+    @Transactional
+    public Game updateGame(Game game) {
+        return gameRepository.save(game);
+    }
+
+    @Transactional
+    public Game handleWrongGuess(Long gameId, String player) throws NotFoundException {
+        Game game = getGameWithWrongGuesses(gameId);
+        game.incrementWrongGuesses(player);
+        return gameRepository.save(game);
     }
 
     public LoadQuestionWithDiceDto loadQuestionWithDice(LoadQuestionRequest loadQuestionRequest) {
@@ -148,6 +168,7 @@ public class GameService {
 
             if (nextLetter <= 'Z') {
                 game.setCurrentLetter(String.valueOf(nextLetter));
+                game.resetWrongGuesses();
 
                 Random random = new Random();
                 int diceRoll = random.nextInt(6) + 1;

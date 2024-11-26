@@ -1,6 +1,21 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { webSocketService } from './websocket';
-import { Box, Typography, Button, TextField, Card, CardContent, CircularProgress, Alert, Dialog, DialogTitle, DialogContent, DialogActions, IconButton, Badge } from '@mui/material';
+import { 
+  Box, 
+  Typography, 
+  Button, 
+  TextField, 
+  Card, 
+  CardContent, 
+  CircularProgress, 
+  Alert, 
+  Dialog, 
+  DialogTitle, 
+  DialogContent, 
+  DialogActions, 
+  IconButton, 
+  Badge
+ } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import ChatIcon from '@mui/icons-material/Chat';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -13,6 +28,8 @@ const Game = ({ onLogout }) => {
   const { state } = useLocation();
   const navigate = useNavigate();
   const [game, setGame] = useState(state?.game || {});
+  const [showGameResult, setShowGameResult] = useState(false);
+  const [gameResult, setGameResult] = useState(null);
   const [userAnswer, setUserAnswer] = useState('');
   const [error, setError] = useState(null);
   const [disconnectDialog, setDisconnectDialog] = useState(false);
@@ -20,12 +37,15 @@ const Game = ({ onLogout }) => {
   const [showDisconnectAlert, setShowDisconnectAlert] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [chatMessages, setChatMessages] = useState([]);
-  const [isChatOpen, setIsChatOpen] = useState(true);
+  const [isChatOpen, setIsChatOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const [chatInput, setChatInput] = useState('');
   const chatContainerRef = useRef(null);
   const [showDiceAnimation, setShowDiceAnimation] = useState(false);
   const audioRef = useRef(new Audio(notificationSound));
+  const [firstHintShown, setFirstHintShown] = useState(false);
+  const [secondHintShown, setSecondHintShown] = useState(false);
+  const [wrongGuessesCount, setWrongGuessesCount] = useState({ firstUser: 0, secondUser: 0 });
 
   useEffect(() => {
     if (!game?.id) {
@@ -54,23 +74,52 @@ const Game = ({ onLogout }) => {
         });
 
         await webSocketService.subscribe(`/topic/game-progress/${game.id}`, (updatedGame) => {
-          console.log('Received game progress update:', updatedGame);
+          if (updatedGame.gameStatusEnum === 'FINISHED') {
+            setGameResult({
+              winner: updatedGame.winner,
+              firstUserPoints: updatedGame.firstUserPoints,
+              secondUserPoints: updatedGame.secondUserPoints
+            });
+            setShowGameResult(true);
+            return;
+          }
           setGame(updatedGame);
+          setFirstHintShown(false);
+          setSecondHintShown(false);
+          setWrongGuessesCount({ firstUser: 0, secondUser: 0 });
           setIsLoading(false);
         });
 
         await webSocketService.subscribe(`/topic/dice-rolled/${game.id}`, (updatedGame) => {
-          console.log('Received dice roll update:', updatedGame);
-          setGame(updatedGame);
-          setIsLoading(false);
+          setShowDiceAnimation(true);
+          setGame(prev => ({
+            ...prev,
+            currentDice: updatedGame.currentDice
+          }));
         });
 
         await webSocketService.subscribe(`/topic/game/${game.id}`, (message) => {
-          console.log('Received disconnect notification:', JSON.stringify(message));
           const disconnectedUser = message.disconnectedPlayer;
           setDisconnectMessage(`${disconnectedUser} has disconnected from the game!`);
           setDisconnectDialog(true);
           setShowDisconnectAlert(true);
+        });
+        
+        await webSocketService.subscribe(`/topic/wrong-guesses/${game.id}`, (wrongGuesses) => {
+          setWrongGuessesCount(wrongGuesses);
+          
+          const firstUserGuesses = wrongGuesses.firstUser || 0;
+          const secondUserGuesses = wrongGuesses.secondUser || 0;
+          
+          if (!firstHintShown && firstUserGuesses >= 1 && secondUserGuesses >= 1) {
+            console.log('Showing first hint');
+            setFirstHintShown(true);
+          }
+          
+          if (!secondHintShown && firstUserGuesses >= 2 && secondUserGuesses >= 2) {
+            console.log('Showing second hint');
+            setSecondHintShown(true);
+          }
         });
 
         const jwtToken = localStorage.getItem('jwtToken');
@@ -82,7 +131,6 @@ const Game = ({ onLogout }) => {
         
         if (response.ok) {
           const currentGame = await response.json();
-          console.log('Initial game state:', currentGame);
           setGame(currentGame);
           setIsLoading(false);
         }
@@ -103,6 +151,7 @@ const Game = ({ onLogout }) => {
       webSocketService.unsubscribe(`/topic/dice-rolled/${game.id}`);
       webSocketService.unsubscribe(`/topic/game/${game.id}`);
       webSocketService.unsubscribe(`/topic/chat/${game.id}`);
+      webSocketService.unsubscribe(`/topic/wrong-guesses/${game.id}`);
     };
   }, [game?.id, navigate, isChatOpen]);
 
@@ -133,6 +182,27 @@ const Game = ({ onLogout }) => {
     }
   };
 
+  const getHintDisplay = () => {
+    if (!game.currentQuestion?.answer) return null;
+    
+    const answer = game.currentQuestion.answer.toLowerCase();
+    
+    if (secondHintShown) {
+      
+      const hint = answer.split('').map((char, index) => {
+        if (index === 0 || index >= answer.length - 2) {
+          return char;
+        }
+        return '_';
+      }).join(' ');
+      return hint;
+    } else if (firstHintShown) {
+      
+      return Array(answer.length).fill('_').join(' ');
+    }
+    return null;
+  };
+
   const handleSubmitAnswer = async (answer) => {
     if (!answer.trim()) {
       setError('Answer cannot be empty');
@@ -151,7 +221,7 @@ const Game = ({ onLogout }) => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          username: '',
+          username: username,
           gameId: game.id,
           userAnswer: answer,
           questionId: game.currentQuestion?.id,
@@ -159,11 +229,29 @@ const Game = ({ onLogout }) => {
       });
 
       if (!response.ok) {
+        const currentPlayer = username === game.firstUser?.username ? 'firstUser' : 'secondUser';
+        
+        await webSocketService.send(`/app/wrong-guess/${game.id}`, {
+          gameId: game.id,
+          player: currentPlayer
+        });
+
         throw new Error('Failed to submit answer');
       }
 
       const updatedGame = await response.json();
-      setGame(updatedGame);
+      console.log("Updated Game: ", updatedGame);
+
+      if (updatedGame.gameStatusEnum === 'FINISHED') {
+        setGameResult({
+          winner: updatedGame.winner,
+          firstUserPoints: updatedGame.firstUserPoints,
+          secondUserPoints: updatedGame.secondUserPoints
+        });
+        setShowGameResult(true);
+        return;
+      }
+
       setUserAnswer('');
       setError(null);
       setShowDiceAnimation(true);
@@ -189,7 +277,7 @@ const Game = ({ onLogout }) => {
         </Typography>
       );
     }
-
+    
     return (
       <>
         <Typography variant="h6" gutterBottom>Current Question</Typography>
@@ -229,6 +317,71 @@ const Game = ({ onLogout }) => {
       p: 4 
     }}>
       <Navi onLogout={onLogout}/>
+
+      <Dialog 
+        open={showGameResult} 
+        onClose={() => setShowGameResult(false)}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle sx={{ bgcolor: '#726eff', color: 'white' }}>
+          Game Finished!
+        </DialogTitle>
+        <DialogContent sx={{ mt: 2 }}>
+          {gameResult && (
+            <>
+              <Typography variant="h6" gutterBottom>
+                Winner: {gameResult.winner?.username}
+              </Typography>
+              <Typography>
+                Final Scores:
+              </Typography>
+              <Box sx={{ mt: 1 }}>
+                <Typography>
+                  {game.firstUser?.username}: {gameResult.firstUserPoints} points
+                </Typography>
+                <Typography>
+                  {game.secondUser?.username}: {gameResult.secondUserPoints} points
+                </Typography>
+              </Box>
+            </>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => {
+            setShowGameResult(false);
+            navigate('/home');
+          }} color="primary">
+            Return to Home
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog
+        open={showDiceAnimation}
+        maxWidth="sm"
+        fullWidth
+        PaperProps={{
+          style: {
+            backgroundColor: 'transparent',
+            boxShadow: 'none',
+          },
+        }}
+      >
+        <DialogContent>
+          <Box display="flex" justifyContent="center" alignItems="center">
+            <Dice 
+              finalValue={game.currentDice} 
+              onAnimationComplete={() => {
+                setShowDiceAnimation(false);
+                webSocketService.send(`/app/update-game/${game.id}`, {
+                  gameId: game.id
+                });
+              }} 
+            />
+          </Box>
+        </DialogContent>
+      </Dialog>
       
       <Box sx={{ maxWidth: 1200, mx: 'auto', mt: 4 }}>
         <Typography variant="h4" align="center" sx={{ 
@@ -430,6 +583,20 @@ const Game = ({ onLogout }) => {
                       <Typography variant="h6" sx={{ mb: 2, color: '#333' }}>
                         {game.currentQuestion.text}
                       </Typography>
+                      {/* Hint Display */}
+                      {(firstHintShown || secondHintShown) && (
+                        <Box sx={{ 
+                          mt: 2, 
+                          p: 2, 
+                          bgcolor: '#e3f2fd', 
+                          borderRadius: 2,
+                          textAlign: 'center'
+                        }}>
+                          <Typography variant="subtitle1" sx={{ color: '#1976d2', fontWeight: 500 }}>
+                            Hint: {getHintDisplay()}
+                          </Typography>
+                        </Box>
+                      )}
                       <TextField
                         fullWidth
                         variant="outlined"

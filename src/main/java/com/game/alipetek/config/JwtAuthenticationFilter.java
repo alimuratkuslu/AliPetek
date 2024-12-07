@@ -59,7 +59,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             filterChain.doFilter(request, response);
             return;
         }
-
+        /*
         String clientIp = request.getRemoteAddr();
         String key = "rate_limit:" + clientIp;
 
@@ -80,6 +80,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 }
             }
         }
+        */
 
         try {
             final String jwt = authHeader.substring(7);

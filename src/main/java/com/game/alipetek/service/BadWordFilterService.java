@@ -13,7 +13,8 @@ public class BadWordFilterService {
 
     public BadWordFilterService() {
         badWords = new HashSet<>(Arrays.asList(
-
+            "badWord1"
+            // Insert banned words here
         ));
     }
 

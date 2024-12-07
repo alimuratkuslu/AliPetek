@@ -97,7 +97,7 @@ const UserMap = ({ onLogout }) => {
       setError('Geolocation is not supported by your browser.');
     }
 
-    const intervalId = setInterval(fetchUserLocations, 10000); // Update every 10 seconds
+    const intervalId = setInterval(fetchUserLocations, 10000); 
 
     return () => clearInterval(intervalId);
   }, []);

@@ -1,24 +1,39 @@
 pipeline {
     agent any
-    tools {
-        jdk 'openjdk:17'
-        maven '4.0.0'
-       
-    }
+
     stages {
-        stage("build project") {
+        stage('Checkout') {
             steps {
-               // git 'https://github.com/alimuratkuslu/AliPetek'
-                echo "Java VERSION"
-                sh 'java -version'
-                echo "Maven VERSION"
-                sh 'mvn -version'
-                echo 'building project...'
-                sh "mvn compile"
-                sh "mvn package"
-                //sh "mvn test"
-                sh "mvn clean install"
+                git 'https://github.com/alimuratkuslu/AliPetek.git'
             }
+        }
+
+        stage('Build') {
+            steps {
+                sh './mvnw clean package'
+            }
+        }
+
+        stage('Test') {
+            steps {
+                // Run tests
+                sh './mvnw test'
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                sh 'java -jar target/alipetek.jar'
+            }
+        }
+    }
+
+    post {
+        success {
+            echo 'Pipeline completed successfully!'
+        }
+        failure {
+            echo 'Pipeline failed. Please check the logs.'
         }
     }
 }

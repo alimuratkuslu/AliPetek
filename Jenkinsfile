@@ -1,5 +1,12 @@
 pipeline {
     agent any
+        tools {
+            maven 'maven'
+        }
+        environment {
+            JAVA_HOME = '/opt/java/openjdk/bin/java'
+            PATH = "${JAVA_HOME}/bin:${env.PATH}"
+        }
 
     stages {
         stage('Checkout') {
@@ -7,6 +14,15 @@ pipeline {
                 script {
                     checkout scm
                 }
+            }
+        }
+
+        stage('Check Versions') {
+            steps {
+                echo 'Checking Java version...'
+                sh 'java -version'
+                echo 'Checking Maven version...'
+                sh 'mvn -version'
             }
         }
 

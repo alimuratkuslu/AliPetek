@@ -7,10 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Data
 @Entity
@@ -99,18 +96,15 @@ public class Game {
         secondUserWrongGuesses = 0;
     }
 
-    public void setFirstUserWrongGuesses(Integer firstUserWrongGuesses) {
-        this.firstUserWrongGuesses = firstUserWrongGuesses;
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        Game game = (Game) o;
+        return firstUserPoints == game.firstUserPoints && secondUserPoints == game.secondUserPoints && currentDice == game.currentDice && Objects.equals(id, game.id) && gameStatusEnum == game.gameStatusEnum && Objects.equals(firstUser, game.firstUser) && Objects.equals(secondUser, game.secondUser) && Objects.equals(winner, game.winner) && Objects.equals(questionList, game.questionList) && Objects.equals(firstSessionId, game.firstSessionId) && Objects.equals(secondSessionId, game.secondSessionId) && Objects.equals(currentQuestion, game.currentQuestion) && Objects.equals(firstUserWrongGuesses, game.firstUserWrongGuesses) && Objects.equals(secondUserWrongGuesses, game.secondUserWrongGuesses) && Objects.equals(currentLetter, game.currentLetter) && Objects.equals(createdDate, game.createdDate) && Objects.equals(finishedDate, game.finishedDate);
     }
 
-    public void setSecondUserWrongGuesses(Integer secondUserWrongGuesses) {
-        this.secondUserWrongGuesses = secondUserWrongGuesses;
-    }
-
-    public List<User> getPlayers() {
-        List<User> players = new ArrayList<>();
-        if (firstUser != null) players.add(firstUser);
-        if (secondUser != null) players.add(secondUser);
-        return players;
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, gameStatusEnum, firstUser, firstUserPoints, secondUser, secondUserPoints, winner, questionList, firstSessionId, secondSessionId, currentQuestion, firstUserWrongGuesses, secondUserWrongGuesses, currentDice, currentLetter, createdDate, finishedDate);
     }
 }

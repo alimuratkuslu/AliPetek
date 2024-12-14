@@ -2,6 +2,10 @@ pipeline {
     agent any
 
     stages {
+        echo "Java VERSION"
+        sh 'java -version'
+        echo "Maven VERSION"
+        sh 'mvn -version'
         stage('Checkout') {
             steps {
                 git 'https://github.com/alimuratkuslu/AliPetek.git'
@@ -16,7 +20,6 @@ pipeline {
 
         stage('Test') {
             steps {
-                // Run tests
                 sh './mvnw test'
             }
         }

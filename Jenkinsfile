@@ -2,41 +2,28 @@ pipeline {
     agent any
 
     stages {
-        echo "Java VERSION"
-        sh 'java -version'
-        echo "Maven VERSION"
-        sh 'mvn -version'
         stage('Checkout') {
             steps {
-                git 'https://github.com/alimuratkuslu/AliPetek.git'
+                script {
+                    checkout scm
+                }
             }
         }
 
-        stage('Build') {
+        stage('Build and Test') {
             steps {
-                sh './mvnw clean package -X'
+                script {
+                    sh 'mvn clean package'
+                }
             }
         }
 
-        stage('Test') {
+        stage('Build Docker Image') {
             steps {
-                sh './mvnw test'
+                script {
+                    sh 'docker build -t alimuratkuslu/alipetek:latest .'
+                }
             }
-        }
-
-        stage('Deploy') {
-            steps {
-                sh 'java -jar target/alipetek.jar'
-            }
-        }
-    }
-
-    post {
-        success {
-            echo 'Pipeline completed successfully!'
-        }
-        failure {
-            echo 'Pipeline failed. Please check the logs.'
         }
     }
 }

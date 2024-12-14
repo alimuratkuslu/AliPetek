@@ -221,9 +221,7 @@ public class GameService {
     }
 
     public List<Game> getPreviousGamesByUsername(String username) {
-        List<Game> previousGames = gameRepository.findPreviousGamesByUser(username);
-
-        return previousGames;
+        return gameRepository.findPreviousGamesByUser(username);
     }
 
     public void saveGame(Game game) {

@@ -6,7 +6,6 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -16,21 +15,11 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.web.servlet.HandlerExceptionResolver;
-import redis.clients.jedis.Jedis;
 
 import java.io.IOException;
 
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
-
-    @Value("${spring.data.redis.host}")
-    private String REDIS_HOST;
-
-    @Value("${spring.data.redis.port}")
-    private int REDIS_PORT;
-
-    @Value("${max.requests.per.minute}")
-    private int MAX_REQUESTS_PER_MINUTE;
 
     private final HandlerExceptionResolver handlerExceptionResolver;
 
@@ -59,28 +48,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             filterChain.doFilter(request, response);
             return;
         }
-        /*
-        String clientIp = request.getRemoteAddr();
-        String key = "rate_limit:" + clientIp;
-
-        try (Jedis jedis = new Jedis(REDIS_HOST, REDIS_PORT)) {
-
-            String requestCount = jedis.get(key);
-            if (requestCount == null) {
-                jedis.setex(key, 60, "1");
-            } else {
-                int currentCount = Integer.parseInt(requestCount);
-
-                if (currentCount < MAX_REQUESTS_PER_MINUTE) {
-                    jedis.incr(key);
-                } else {
-                    response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-                    response.getWriter().write("Rate limit exceeded. Try again later.");
-                    return;
-                }
-            }
-        }
-        */
 
         try {
             final String jwt = authHeader.substring(7);

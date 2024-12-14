@@ -17,8 +17,13 @@ import {
   Dialog,
   DialogTitle, 
   DialogContent, 
-  DialogActions
+  DialogActions,
+  IconButton,
+  List,
+  ListItem,
+  ListItemText
 } from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
 
 const Home = ({ onLogout }) => {
   const navigate = useNavigate();
@@ -29,6 +34,11 @@ const Home = ({ onLogout }) => {
   const [selectedUser, setSelectedUser] = useState(null);
   const [showGameResult, setShowGameResult] = useState(false);
   const [gameResult, setGameResult] = useState(null);
+  const [friendUsername, setFriendUsername] = useState('');
+  const [friendRequests, setFriendRequests] = useState([]);
+
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [dialogMessage, setDialogMessage] = useState('');
 
   useEffect(() => {
 
@@ -49,7 +59,6 @@ const Home = ({ onLogout }) => {
 
     const fetchUsers = async () => {
       const jwtToken = localStorage.getItem('jwtToken');
-      console.log('jwtToken:', jwtToken);
       try {
         const response = await axios.get('http://localhost:8080/api/user/getAllUsers', {
           headers: {
@@ -67,13 +76,75 @@ const Home = ({ onLogout }) => {
 
     initializeWebSocket();
     fetchUsers();
+    fetchFriendRequests();
   }, [location]);
+
+  const fetchFriendRequests = async () => {
+    const jwtToken = localStorage.getItem('jwtToken');
+    const response = await axios.get('http://localhost:8080/api/user/friend-requests', {
+      headers: {
+        Authorization: `Bearer ${jwtToken}`,
+        'Content-Type': 'application/json',
+      }
+    }); 
+
+    if (Array.isArray(response.data)) {
+      const unacceptedRequests = response.data.filter(request => !request.accepted);
+      setFriendRequests(unacceptedRequests);
+    } else {
+        console.error("Expected an array but received:", response.data);
+        setFriendRequests([]); 
+    }
+  };
 
   const handleSearchChange = (inputValue) => {
     const filtered = userList.filter((user) =>
       user.username.toLowerCase().includes(inputValue.toLowerCase())
     );
     setFilteredUsers(filtered);
+  };
+
+  const sendFriendRequest = async () => {
+    const jwtToken = localStorage.getItem('jwtToken');
+    try {
+      await axios.post('http://localhost:8080/api/user/friend-requests/send', 
+      { username: friendUsername }, 
+      {
+        headers: {
+          Authorization: `Bearer ${jwtToken}`,
+          'Content-Type': 'application/json',
+        }
+      },);
+      setDialogMessage(`Friend request sent to ${friendUsername}`);
+      setDialogOpen(true);
+      setFriendUsername(''); 
+    } catch (error) {
+      setDialogMessage(`Failed to send friend request: ${error.message}`);
+      setDialogOpen(true);
+    }
+  };
+
+  const acceptFriendRequest = async (requestId) => {
+    const jwtToken = localStorage.getItem('jwtToken');
+    await axios.post(`http://localhost:8080/api/user/friend-requests/accept/${requestId}`,
+      {}, {
+      headers: {
+        Authorization: `Bearer ${jwtToken}`,
+        'Content-Type': 'application/json',
+      }
+    });
+    fetchFriendRequests(); 
+  };
+
+  const denyFriendRequest = async (requestId) => {
+    const jwtToken = localStorage.getItem('jwtToken');
+    await axios.delete(`http://localhost:8080/api/user/friend-requests/deny/${requestId}`, {
+      headers: {
+        Authorization: `Bearer ${jwtToken}`,
+        'Content-Type': 'application/json',
+      }
+    });
+    fetchFriendRequests(); 
   };
 
   const addFriend = async () => {
@@ -91,11 +162,19 @@ const Home = ({ onLogout }) => {
             },
           }
         );
-        alert(`${username} has been added as a friend!`);
+        setDialogMessage(`Friend request sent to ${selectedUser.username}`);
+        setDialogOpen(true);
       } catch (error) {
         console.error('Error adding friend:', error);
+        setDialogMessage(`Failed to send friend request: ${error.response?.data?.message || error.message}`);
+        setDialogOpen(true);
       }
     }
+  };
+
+  const handleDialogClose = () => {
+    setDialogOpen(false);
+    setDialogMessage('');
   };
 
   const createGame = async () => {
@@ -411,44 +490,47 @@ const Home = ({ onLogout }) => {
               </Box>
               <CardContent sx={{ p: 3 }}>
                 <Box sx={{ display: 'flex', gap: 2 }}>
-                  <Autocomplete
-                    options={filteredUsers}
-                    getOptionLabel={(option) => option.username}
-                    onInputChange={(e, value) => handleSearchChange(value)}
-                    onChange={(e, value) => setSelectedUser(value)}
-                    fullWidth
-                    renderInput={(params) => (
-                      <TextField
-                        {...params}
-                        label="Search Users"
-                        variant="outlined"
-                        sx={{
-                          '& .MuiOutlinedInput-root': {
-                            borderRadius: 2,
-                            bgcolor: 'white'
-                          }
-                        }}
-                      />
-                    )}
-                  />
-                  <Button
-                    variant="contained"
-                    onClick={addFriend}
-                    disabled={!selectedUser}
-                    sx={{
-                      bgcolor: '#4caf50',
-                      height: 56,
-                      minWidth: 120,
-                      borderRadius: 2,
-                      textTransform: 'none',
-                      fontWeight: 600,
-                      '&:hover': {
-                        bgcolor: '#388e3c'
-                      }
-                    }}
-                  >
-                    Add Friend
-                  </Button>
+                  
+                <TextField
+                  label="Friend Username"
+                  value={friendUsername}
+                  onChange={(e) => setFriendUsername(e.target.value)}
+                />
+                <Button onClick={sendFriendRequest} variant="contained" color="primary">
+                  Send Request
+                </Button>
+
+                <Typography variant="h5">Friend Requests</Typography>
+                <List>
+                {friendRequests.length === 0 ? (
+                  <ListItem>
+                    <ListItemText primary="No friend requests available." />
+                  </ListItem>
+                ) : (
+                  friendRequests.map((request) => (
+                    <ListItem key={request.id}>
+                      <ListItemText primary={`Request from ${request.sender.username}`} />
+                      <Button onClick={() => acceptFriendRequest(request.id)} color="primary">
+                        Accept
+                      </Button>
+                      <Button onClick={() => denyFriendRequest(request.id)} color="secondary">
+                        Deny
+                      </Button>
+                    </ListItem>
+                  ))
+                )}
+                </List>
+
+                {/* Dialog for notifications */}
+                <Dialog open={dialogOpen} onClose={handleDialogClose}>
+                  <DialogTitle>Notification</DialogTitle>
+                  <DialogContent>
+                    <Typography>{dialogMessage}</Typography>
+                  </DialogContent>
+                  <DialogActions>
+                    <Button onClick={handleDialogClose} color="primary">Close</Button>
+                  </DialogActions>
+                </Dialog>
                 </Box>
               </CardContent>
             </Card>

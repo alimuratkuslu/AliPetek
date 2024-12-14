@@ -14,10 +14,7 @@ import {
   Grid,
   Container,
   Avatar,
-  Switch,
-  FormControlLabel,
-  Alert,
-  Snackbar
+  Switch
 } from '@mui/material';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import LocationOffIcon from '@mui/icons-material/LocationOff';
@@ -67,12 +64,13 @@ const Profile = ({ onLogout }) => {
     const jwtToken = localStorage.getItem('jwtToken');
     const fetchUserProfile = async () => {
       try {
-        const response = await axios.get('http://localhost:8080/api/profile', {
+        const response = await axios.get('http://localhost:8080/api/user/profile', {
           headers: {
             Authorization: `Bearer ${jwtToken}`,
             'Content-Type': 'application/json',
           },
         });
+
         setUserProfile(response.data);
       } catch (error) {
         console.error('Error fetching user profile:', error);
@@ -143,12 +141,11 @@ const Profile = ({ onLogout }) => {
       
       <Container maxWidth="lg" sx={{ pt: 8 }}>
       <Box sx={{
-        pt: { xs: 12, sm: 7 }, // Increased top padding to avoid navbar overlap
+        pt: { xs: 12, sm: 7 },
         pb: { xs: 6, sm: 8 },
         textAlign: 'center',
         position: 'relative'
       }}>
-        {/* Background Decoration */}
         <Box sx={{
           position: 'absolute',
           top: '50%',
@@ -163,7 +160,6 @@ const Profile = ({ onLogout }) => {
           zIndex: 0
         }} />
 
-        {/* Trophy Icon */}
         <Box sx={{
           position: 'relative',
           zIndex: 1,
@@ -182,7 +178,6 @@ const Profile = ({ onLogout }) => {
           </Typography>
         </Box>
 
-        {/* Main Title */}
         <Typography variant="h2" sx={{
           position: 'relative',
           zIndex: 1,
@@ -200,7 +195,6 @@ const Profile = ({ onLogout }) => {
           Profile
         </Typography>
 
-        {/* Subtitle */}
         <Typography variant="h6" sx={{
           position: 'relative',
           zIndex: 1,
@@ -215,7 +209,6 @@ const Profile = ({ onLogout }) => {
       </Box>
 
         <Grid container spacing={4}>
-          {/* Profile Info Card */}
           <Grid item xs={12} md={8}>
             <Card sx={{
               borderRadius: 3,
@@ -341,7 +334,6 @@ const Profile = ({ onLogout }) => {
             </Card>
           </Grid>
 
-          {/* Friends Card */}
           <Grid item xs={12} md={4}>
             <Card sx={{
               borderRadius: 3,
@@ -361,8 +353,8 @@ const Profile = ({ onLogout }) => {
               </Box>
               <CardContent sx={{ p: 0 }}>
                 <List sx={{ p: 0 }}>
-                  {userProfile.friendsSet.length > 0 ? (
-                    userProfile.friendsSet.map((friend, index) => (
+                  {userProfile.friends.length > 0 ? (
+                    userProfile.friends.map((friend, index) => (
                       <React.Fragment key={friend.id}>
                         <ListItem sx={{
                           px: 3,
@@ -377,7 +369,10 @@ const Profile = ({ onLogout }) => {
                             gap: 2,
                             width: '100%'
                           }}>
-                            <Avatar sx={{
+                            <Avatar 
+                            alt={friend.username}
+                            src={friend.avatarUrl}
+                            sx={{
                               bgcolor: '#4caf50',
                               width: 40,
                               height: 40
@@ -396,7 +391,7 @@ const Profile = ({ onLogout }) => {
                             </Box>
                           </Box>
                         </ListItem>
-                        {index < userProfile.friendsSet.length - 1 && (
+                        {index < userProfile.friends.length - 1 && (
                           <Divider />
                         )}
                       </React.Fragment>
@@ -413,7 +408,6 @@ const Profile = ({ onLogout }) => {
             </Card>
           </Grid>
 
-          {/* Previous Games Card */}
           <Grid item xs={12}>
             <Card sx={{
               borderRadius: 3,

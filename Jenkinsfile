@@ -21,7 +21,6 @@ pipeline {
             steps {
                 script {
                     sh 'set -a && . /var/jenkins_home/workspace/AliPetek@tmp/.env && set +a'
-                    sh 'java -version'
                 }
             }
         }

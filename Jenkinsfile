@@ -17,20 +17,10 @@ pipeline {
             }
         }
 
-        stage('Check Versions') {
-            steps {
-                echo 'Checking Java version...'
-                sh 'java -version'
-                echo 'Checking Maven version...'
-                sh 'mvn -version'
-            }
-        }
-
         stage('Load Environment Variables') {
             steps {
                 script {
                     sh 'set -a && . /var/jenkins_home/workspace/AliPetek@tmp/.env && set +a'
-                    sh 'echo $SPRING_DATASOURCE_URL'
                 }
             }
         }
@@ -39,16 +29,6 @@ pipeline {
             steps {
                 script {
                     sh 'mvn clean package'
-                }
-            }
-        }
-
-        stage('Verify Docker Access') {
-            steps {
-                script {
-                    sh 'whoami'
-                    sh 'groups'
-                    sh 'docker ps'
                 }
             }
         }

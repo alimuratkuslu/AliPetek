@@ -43,10 +43,30 @@ pipeline {
             }
         }
 
-        stage('Build Docker Image') {
+        stages {
+        stage('Build Backend Docker Image') {
             steps {
                 script {
-                    sh 'docker build -t alimuratkuslu/alipetek:latest .'
+                    sh 'docker build -t alimuratkuslu/alipetek-backend:latest .'
+                }
+            }
+        }
+
+        stage('Build Frontend Docker Image') {
+            steps {
+                script {
+                    dir('ui') {
+                        sh 'docker build -t alimuratkuslu/alipetek-frontend:latest .'
+                    }
+                }
+            }
+        }
+
+        stage('Push Docker Images') {
+            steps {
+                script {
+                    sh 'docker push alimuratkuslu/alipetek-backend:latest'
+                    sh 'docker push alimuratkuslu/alipetek-frontend:latest'
                 }
             }
         }

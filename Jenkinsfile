@@ -43,6 +43,16 @@ pipeline {
             }
         }
 
+        stage('Verify Docker Access') {
+            steps {
+                script {
+                    sh 'whoami'
+                    sh 'groups'
+                    sh 'docker ps'
+                }
+            }
+        }
+
         stage('Build Backend Docker Image') {
             steps {
                 script {

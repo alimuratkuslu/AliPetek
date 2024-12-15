@@ -29,7 +29,7 @@ pipeline {
         stage('Load Environment Variables') {
             steps {
                 script {
-                    sh 'set -a && source /var/jenkins_home/workspace/AliPetek/.env && set +a'
+                    sh 'set -a && source /var/jenkins_home/workspace/AliPetek@tmp/.env && set +a'
 
                     sh 'echo $SPRING_DATASOURCE_URL'
                 }
